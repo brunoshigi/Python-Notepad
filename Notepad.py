@@ -289,9 +289,10 @@ class CyberpunkNotepad:
         self.__updateStatus("New file created")
 
     def __openFile(self):
-        self.__file = askopenfilename(defaultextension=".txt",
-                                    filetypes=[("All Files", "*.*"),
-                                             ("Text Documents", "*.txt")])
+        self.__file = askopenfilename(
+            defaultextension=".md",
+            filetypes=[("Markdown Files","*.md"),("All Files","*.*")]
+        )
         if self.__file:
             self.__root.title(os.path.basename(self.__file) + " - CyberPad ⚡")
             self.__thisTextArea.delete(1.0, END)
@@ -302,10 +303,11 @@ class CyberpunkNotepad:
 
     def __saveFile(self):
         if not self.__file:
-            self.__file = asksaveasfilename(initialfile='Untitled.txt',
-                                          defaultextension=".txt",
-                                          filetypes=[("All Files", "*.*"),
-                                                   ("Text Documents", "*.txt")])
+            self.__file = asksaveasfilename(
+                initialfile='Untitled.md',
+                defaultextension=".md",
+                filetypes=[("Markdown Files","*.md"),("All Files","*.*")]
+            )
         if self.__file:
             with open(self.__file, "w") as file:
                 file.write(self.__thisTextArea.get(1.0, END))
@@ -397,6 +399,22 @@ Characters per line: {char_count/line_count:.1f}"""
             fg=self.colors['menu_fg']
         ).pack(pady=10)
 
+    def __showMarkdownPreview(self):
+        import markdown
+        preview_dialog = Toplevel(self.__root)
+        preview_dialog.title("Markdown Preview")
+        preview_dialog.configure(bg=self.colors['bg'])
+        content = self.__thisTextArea.get(1.0, END)
+        html_content = markdown.markdown(content)
+        preview_label = Label(
+            preview_dialog,
+            text=html_content,
+            bg=self.colors['bg'],
+            fg=self.colors['menu_fg'],
+            justify=LEFT
+        )
+        preview_label.pack(padx=20, pady=20)
+
     def run(self):
         # Set up keyboard shortcuts
         self.__setupShortcuts()
@@ -404,6 +422,7 @@ Characters per line: {char_count/line_count:.1f}"""
         # Add text stats to View menu
         self.__thisViewMenu.add_separator()
         self.__thisViewMenu.add_command(label="Text Statistics", command=self.__showTextStats)
+        self.__thisViewMenu.add_command(label="Markdown Preview", command=self.__showMarkdownPreview)
         
         # Run main application
         self.__root.mainloop()
